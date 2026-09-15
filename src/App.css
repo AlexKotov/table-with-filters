@@ -1,38 +1,65 @@
-.App {
-  text-align: center;
+.dashboard {
+  padding-top: 56px;
+  padding-bottom: 56px;
 }
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.table-paper,
+.detail-panel {
+  border: 1px solid #e5e8f0;
+  box-shadow: 0 12px 36px rgba(37, 52, 91, 0.07);
+  overflow: hidden;
 }
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.table-paper {
+  min-width: 0;
 }
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.detail-panel {
+  width: 340px;
+  padding: 22px;
+  flex: 0 0 340px;
+}
+.incident-title {
+  font-weight: 700 !important;
+  color: #20283a;
+}
+.state-box {
+  min-height: 360px;
   display: flex;
   flex-direction: column;
+  gap: 16px;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  padding: 24px;
 }
-
-.App-link {
-  color: #61dafb;
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 18px;
 }
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
+.detail-item {
+  background: #f7f9fd;
+  padding: 10px;
+  border-radius: 9px;
+}
+.detail-item .MuiTypography-caption {
+  color: #778198;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.status-new {
+  background: #e0f3fb !important;
+  color: #2787a8 !important;
+}
+.status-investigating {
+  background: #eee7ff !important;
+  color: #6850ad !important;
+}
+.status-resolved {
+  background: #def7e8 !important;
+  color: #2b9a5c !important;
+}
+@media (max-width: 899px) {
+  .detail-panel {
+    width: auto;
+    flex-basis: auto;
   }
 }

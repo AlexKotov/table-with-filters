@@ -1,0 +1,99 @@
+import { Incident, IncidentStatus } from '../types';
+
+export const INCIDENTS: Incident[] = [
+  {
+    id: 'INC-1001',
+    title: 'Рост 5xx ошибок в API оформления',
+    service: 'Оформление',
+    priority: 'critical',
+    status: 'investigating',
+    updatedAt: '2026-04-20T12:30:00',
+    description:
+      'Количество ошибок выросло после последнего релиза. Команда проверяет логи.',
+    assignee: 'Анна Петрова',
+  },
+  {
+    id: 'INC-1002',
+    title: 'Поиск полосок возвращает устаревшие результаты',
+    service: 'Поиск',
+    priority: 'high',
+    status: 'new',
+    updatedAt: '2026-04-20T11:05:00',
+    description:
+      'Операторы видят старые версии полосок в выдаче, пока ручную обновят страницу.',
+    assignee: 'Иван Кузнецов',
+  },
+  {
+    id: 'INC-1003',
+    title: 'Деградация загрузки вложений по убыткам',
+    service: 'Убытки',
+    priority: 'high',
+    status: 'investigating',
+    updatedAt: '2026-04-19T20:20:00',
+    description: 'Загрузка больших вложений занимает больше обычного.',
+    assignee: 'Мария Орлова',
+  },
+  {
+    id: 'INC-1004',
+    title: 'Ночная сверка завершилась с расхождениями',
+    service: 'Финансы',
+    priority: 'medium',
+    status: 'resolved',
+    updatedAt: '2026-04-19T15:15:00',
+    description: 'Расхождения устранены, повторная сверка прошла успешно.',
+    assignee: 'Олег Смирнов',
+  },
+  {
+    id: 'INC-1005',
+    title: 'Очередь SMS-уведомлений идет с задержкой',
+    service: 'Уведомления',
+    priority: 'medium',
+    status: 'new',
+    updatedAt: '2026-04-18T17:45:00',
+    description: 'Время доставки SMS увеличилось до нескольких минут.',
+    assignee: 'Анна Петрова',
+  },
+  {
+    id: 'INC-1006',
+    title: 'Форма обновления профиля пустая у части пользователей',
+    service: 'Портал',
+    priority: 'low',
+    status: 'resolved',
+    updatedAt: '2026-04-17T13:10:00',
+    description: 'Проблема с кешированием формы исправлена.',
+    assignee: 'Иван Кузнецов',
+  },
+];
+
+let incidentStore = [...INCIDENTS];
+
+export const fetchIncidents = async (
+  shouldFail = false
+): Promise<Incident[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 550));
+  if (shouldFail) {
+    throw new Error('Не удалось загрузить инциденты');
+  }
+  return incidentStore.map((incident) => ({ ...incident }));
+};
+
+export const updateIncidentStatus = async (
+  id: string,
+  status: IncidentStatus,
+  shouldFail = false
+): Promise<Incident> => {
+  await new Promise((resolve) => setTimeout(resolve, 450));
+  if (shouldFail) {
+    throw new Error('Не удалось обновить статус');
+  }
+  incidentStore = incidentStore.map((incident) =>
+    incident.id === id
+      ? { ...incident, status, updatedAt: new Date().toISOString() }
+      : incident
+  );
+  const updated = incidentStore.find((incident) => incident.id === id);
+  if (!updated) {
+    throw new Error('Инцидент не найден');
+  }
+  return { ...updated };
+};
