@@ -18,5 +18,5 @@ root.render(
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
 
-// TODO структурировать проект и файлы
-// TODO пообщаться с Тёмой, Яриком, Женей, чтобы понять, как оптимальней пользоваться нейронкой
+// TODO мутации вынести
+// TODO запросы из mockData убрать
