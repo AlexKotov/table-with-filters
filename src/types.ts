@@ -13,3 +13,19 @@ export interface Incident {
 }
 
 export type SortOption = 'updatedAt' | 'priority';
+
+export interface DashboardState {
+  search: string;
+  status: IncidentStatus | 'all';
+  sort: SortOption;
+  selectedId: string | null;
+  setSearch: (value: string) => void;
+  setStatus: (value: IncidentStatus | 'all') => void;
+  setSort: (value: SortOption) => void;
+  setSelectedId: (value: string | null) => void;
+}
+
+export interface UpdateIncidentStatusInput {
+  id: string;
+  nextStatus: IncidentStatus;
+}

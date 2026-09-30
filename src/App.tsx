@@ -25,7 +25,6 @@ import {
   createTheme,
 } from '@mui/material';
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import {
   QueryClient,
@@ -42,23 +41,20 @@ import {
 } from '@tanstack/react-table';
 import { fetchIncidents, updateIncidentStatus } from './data/mockData';
 import {
+  DashboardState,
   Incident,
-  IncidentPriority,
   IncidentStatus,
   SortOption,
+  UpdateIncidentStatusInput,
 } from './types';
+import { DetailPanel } from './components/DetailPanel';
+import {
+  formatDate,
+  priorityLabel,
+  priorityColor,
+  statusLabel,
+} from './utils/incidentDisplay';
 import './App.css';
-
-interface DashboardState {
-  search: string;
-  status: IncidentStatus | 'all';
-  sort: SortOption;
-  selectedId: string | null;
-  setSearch: (value: string) => void;
-  setStatus: (value: IncidentStatus | 'all') => void;
-  setSort: (value: SortOption) => void;
-  setSelectedId: (value: string | null) => void;
-}
 
 const DashboardContext = createContext<DashboardState | null>(null);
 const useDashboard = (): DashboardState => {
@@ -67,36 +63,6 @@ const useDashboard = (): DashboardState => {
     throw new Error('useDashboard must be used inside DashboardContext');
   return context;
 };
-
-const priorityLabel: Record<IncidentPriority, string> = {
-  low: 'Низкий',
-  medium: 'Средний',
-  high: 'Высокий',
-  critical: 'Критичный',
-};
-const statusLabel: Record<IncidentStatus, string> = {
-  new: 'Новый',
-  investigating: 'В работе',
-  resolved: 'Решен',
-};
-const priorityColor: Record<
-  IncidentPriority,
-  'info' | 'warning' | 'error' | 'success'
-> = {
-  low: 'info',
-  medium: 'warning',
-  high: 'warning',
-  critical: 'error',
-};
-
-const formatDate = (value: string): string =>
-  new Intl.DateTimeFormat('ru-RU', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(value));
 
 const columnHelper = createColumnHelper<Incident>();
 
@@ -135,13 +101,8 @@ function Dashboard() {
   }, [incidentsQuery.data, search, status, sort]);
 
   const mutation = useMutation({
-    mutationFn: ({
-      id,
-      nextStatus,
-    }: {
-      id: string;
-      nextStatus: IncidentStatus;
-    }) => updateIncidentStatus(id, nextStatus, shouldFail),
+    mutationFn: ({ id, nextStatus }: UpdateIncidentStatusInput) =>
+      updateIncidentStatus(id, nextStatus, shouldFail),
     onMutate: async ({ id, nextStatus }) => {
       setMutationError(null);
       await queryClient.cancelQueries({ queryKey: ['incidents'] });
@@ -366,80 +327,6 @@ function Dashboard() {
         )}
       </Stack>
     </Container>
-  );
-}
-
-function DetailPanel({
-  incident,
-  onClose,
-  onStatusChange,
-  isPending,
-}: {
-  incident: Incident;
-  onClose: () => void;
-  onStatusChange: (status: IncidentStatus) => void;
-  isPending: boolean;
-}) {
-  return (
-    <Paper className="detail-panel">
-      <Stack
-        direction="row"
-        sx={{
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-        }}
-      >
-        <Box>
-          <Typography variant="overline" color="primary">
-            Детали инцидента
-          </Typography>
-          <Typography variant="h6" fontWeight={800}>
-            {incident.title}
-          </Typography>
-        </Box>
-        <Button size="small" onClick={onClose} startIcon={<CloseRoundedIcon />}>
-          Закрыть
-        </Button>
-      </Stack>
-      <Box className="detail-grid">
-        {[
-          ['ID', incident.id],
-          ['Сервис', incident.service],
-          ['Приоритет', priorityLabel[incident.priority]],
-          ['Ответственный', incident.assignee],
-          ['Последнее обновление', formatDate(incident.updatedAt)],
-        ].map(([label, value]) => (
-          <Box key={label} className="detail-item">
-            <Typography variant="caption">{label}</Typography>
-            <Typography fontWeight={700}>{value}</Typography>
-          </Box>
-        ))}
-      </Box>
-      <Typography color="text.secondary" mt={2} mb={2}>
-        {incident.description}
-      </Typography>
-      <FormControl fullWidth size="small" disabled={isPending}>
-        <InputLabel>Статус</InputLabel>
-        <Select
-          value={incident.status}
-          label="Статус"
-          onChange={(event: SelectChangeEvent) =>
-            onStatusChange(event.target.value as IncidentStatus)
-          }
-        >
-          {Object.entries(statusLabel).map(([key, label]) => (
-            <MenuItem value={key} key={key}>
-              {label}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-      {isPending && (
-        <Typography variant="caption" color="text.secondary">
-          Сохраняем...
-        </Typography>
-      )}
-    </Paper>
   );
 }
 
