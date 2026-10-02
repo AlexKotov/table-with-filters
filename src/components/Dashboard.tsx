@@ -23,19 +23,15 @@ import {
 } from '@mui/material';
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import {
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { fetchIncidents, updateIncidentStatus } from './../data/mockData';
-import {
-  Incident,
-  IncidentStatus,
-  SortOption,
-  UpdateIncidentStatusInput,
-} from './../types';
+import { fetchIncidents } from './../api/incidents';
+import { useIncidentsMutation } from './../hooks';
+import { IncidentStatus, SortOption } from './../types';
 import { useDashboard } from './DashboardContext';
 import { DetailPanel } from './DetailPanel';
 import { columns } from './dashboardColumns';
@@ -52,9 +48,7 @@ export function Dashboard() {
     setSort,
     setSelectedId,
   } = useDashboard();
-  const queryClient = useQueryClient();
   const [shouldFail, setShouldFail] = useState(false);
-  const [mutationError, setMutationError] = useState<string | null>(null);
   const incidentsQuery = useQuery({
     queryKey: ['incidents', shouldFail],
     queryFn: () => fetchIncidents(shouldFail),
@@ -75,34 +69,7 @@ export function Dashboard() {
     );
   }, [incidentsQuery.data, search, status, sort]);
 
-  const mutation = useMutation({
-    mutationFn: ({ id, nextStatus }: UpdateIncidentStatusInput) =>
-      updateIncidentStatus(id, nextStatus, shouldFail),
-    onMutate: async ({ id, nextStatus }) => {
-      setMutationError(null);
-      await queryClient.cancelQueries({ queryKey: ['incidents'] });
-      const previous = queryClient.getQueryData<Incident[]>([
-        'incidents',
-        shouldFail,
-      ]);
-      queryClient.setQueryData<Incident[]>(
-        ['incidents', shouldFail],
-        (items: Incident[] = []) =>
-          items.map((item) =>
-            item.id === id ? { ...item, status: nextStatus } : item
-          )
-      );
-      return { previous };
-    },
-    onError: (error, _variables, context) => {
-      if (context?.previous)
-        queryClient.setQueryData(['incidents', shouldFail], context.previous);
-      setMutationError(
-        error instanceof Error ? error.message : 'Ошибка обновления'
-      );
-    },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ['incidents'] }),
-  });
+  const { mutation, mutationError } = useIncidentsMutation(shouldFail);
 
   const table = useReactTable({
     data: filteredIncidents,
